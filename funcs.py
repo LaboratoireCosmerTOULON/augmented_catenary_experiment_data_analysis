@@ -1,9 +1,10 @@
-from math import sin, cos, pi, sqrt
+from math import sin, cos, pi, sqrt, acos
 
 import pandas as pd
 from numpy import nan
 from numpy.linalg import norm
 from pandas import DataFrame
+import scipy.optimize as opt
 
 from calc_catenary_from_ext_points import *
 
@@ -129,7 +130,7 @@ def df_rotate(v, ex, ey, ez):
     R[:, 0] = ex
     R[:, 1] = ey
     R[:, 2] = ez
-    new_v = pd.Series(np.matmul(v, R))
+    new_v = pd.Series(np.matmul(R.T, v))
     return new_v
 
 
@@ -154,17 +155,28 @@ def df_rotate_angle(v, angle, axis):
         ])
     else:
         raise RuntimeError("axis out of range for rotation in 3D")
-    return pd.Series(np.matmul(v, R))
+    new_v = pd.Series(np.matmul(R.T, v))
+    return new_v
 
 
 def df_compute_catenary(p1, p2, l, d, d0, name):
     p1 /= 1000.
     p2 /= 1000.
-    points, _ = get_coor_marker_points_ideal_catenary(
-        p1[0], p1[1], p1[2],
-        p2[0], p2[1], p2[2],
-        l, d, d0, 16
-    )
+    try:
+        points, _ = get_coor_marker_points_ideal_catenary(
+            p1[0], p1[1], p1[2],
+            p2[0], p2[1], p2[2],
+            l, d, d0, 16
+        )
+    except:
+        points = np.full((16, 3), np.nan)
+
+    if np.any(np.isnan(points)):
+        points[:] = np.nan
+    for p1, p2 in zip(points[:-1], points[1:]):
+        if norm(p1 - p2) > d * 2 or p1[0] > p2[0]:
+            points[:] = np.nan
+            break
 
     S = pd.Series(dtype='float64')
     for i, p in enumerate(points):
@@ -182,7 +194,7 @@ def df_compute_distance_to_catenary(X, Xc, Y, Yc, Z, Zc, name):
     return S
 
 
-def angles_cost_function(angles, X, Y, Z, L, dL, d0, is_float, n_points, exc, eyc, ezc):
+def angles_cost_function(angles, X, Y, Z, L, dL, d0, n_points, exc, eyc, ezc):
     theta, gamma = angles
 
     cat_R = np.zeros((3, 3))
@@ -203,31 +215,36 @@ def angles_cost_function(angles, X, Y, Z, L, dL, d0, is_float, n_points, exc, ey
     ])
 
     origin = np.array([
-        X[0 if not is_float else 15],
-        Y[0 if not is_float else 15],
-        Z[0 if not is_float else 15]
+        X[0],
+        Y[0],
+        Z[0]
     ])
 
     vB = np.array([
-        X[n_points - 1 if not is_float else 0],
-        Y[n_points - 1 if not is_float else 0],
-        Z[n_points - 1 if not is_float else 0]
+        X[n_points - 1],
+        Y[n_points - 1],
+        Z[n_points - 1]
     ])
-    vB = np.matmul(vB - origin, R_theta.T) + origin
+    vB = np.matmul(R_theta.T, vB - origin) + origin
 
     points, _ = get_coor_marker_points_ideal_catenary(
-        X[0 if not is_float else 15] / 1000., Y[0 if not is_float else 15] / 1000., Z[0 if not is_float else 15] / 1000.,
-        vB[0] / 1000., vB[1] / 1000., vB[2] / 1000.,
+        X[0] / 1000.,
+        Y[0] / 1000.,
+        Z[0] / 1000.,
+        vB[0] / 1000.,
+        vB[1] / 1000.,
+        vB[2] / 1000.,
         L, dL, d0, n_points
     )
+
     points *= 1000.
 
     tilted = np.zeros(points.shape)
     for i, point in enumerate(points):
-        tilted[i, :] = np.matmul(point - origin, cat_R)
-        tilted[i, :] = np.matmul(tilted[i, :], R_theta)
-        tilted[i, :] = np.matmul(tilted[i, :], R_gamma)
-        tilted[i, :] = np.matmul(tilted[i, :], cat_R.T) + origin
+        tilted[i, :] = np.matmul(cat_R.T, point - origin)
+        tilted[i, :] = np.matmul(R_theta, tilted[i, :])
+        tilted[i, :] = np.matmul(R_gamma.T, tilted[i, :])
+        tilted[i, :] = np.matmul(cat_R, tilted[i, :]) + origin
 
     mean = 0
     n_not_nan = 0
@@ -239,13 +256,65 @@ def angles_cost_function(angles, X, Y, Z, L, dL, d0, is_float, n_points, exc, ey
 
     return mean / n_not_nan
 
-def df_compute_theta_gamma(X, Y, Z, L, dL, d0, is_float, n_points, exc, eyc, ezc):
-    res = opt.minimize(
-        angles_cost_function,
-        np.array([0., 0.]),
-        (X, Y, Z, L, dL, d0, is_float, n_points, exc, eyc, ezc),
-        bounds=([-pi/2, pi/2], [-pi/2, pi/2])
+def theta_cost_function(theta, X, Y, Z, L, dL, d0, n_points):
+    R = np.array([
+        [cos(theta), 0, sin(theta)],
+        [0, 1, 0],
+        [-sin(theta), 0, cos(theta)]
+    ])
+
+    origin = np.array([
+        X[0],
+        Y[0],
+        Z[0]
+    ])
+
+    xB = np.array([
+        X[n_points - 1],
+        Y[n_points - 1],
+        Z[n_points - 1]
+    ])
+
+    xB = np.matmul(R.T, xB - origin) + origin
+
+    points, _ = get_coor_marker_points_ideal_catenary(
+        X[0] / 1000., Y[0] / 1000., Z[0] / 1000.,
+        xB[0] / 1000., xB[1] / 1000., xB[2] / 1000.,
+        L, dL, d0, n_points
     )
-    theta, gamma = res.x
+    points *= 1000.
+
+    dist = 0.
+    n = 0
+    for i, point in enumerate(points):
+        measure = np.array([X[i], Y[i], Z[i]])
+        temp = np.matmul(R, point - origin) + origin - measure
+        if not np.any(np.isnan(temp)):
+            dist += norm(temp)
+            n += 1
+
+    return dist / n
+
+def tilt_plane_cost_function(abcd, X, Y, Z):
+    a, b, c, d = abcd[0], abcd[1], abcd[2], abcd[3]
+    dist = 0.
+    for x, y, z in zip(X, Y, Z):
+        if not pd.isna(x):
+            dist += pow((x * a + y * b + z * c) / 1000. + d, 2)
+    return dist / len(X)
+
+def df_compute_theta_gamma(X, Y, Z, L, dL, d0, n_points):
+    try:
+        theta = opt.least_squares(theta_cost_function, 0, args=(X, Y, Z, L, dL, d0, n_points))
+        theta = theta.x[0]
+        tilt_plane = opt.least_squares(tilt_plane_cost_function, [0, 1, 0, 1], args=(X, Y, Z))
+        tilt_normal = tilt_plane.x[:3] / norm(tilt_plane.x[:3])
+        if tilt_normal[1] < 0: tilt_normal *= -1
+        gamma = acos(tilt_normal[1]) * (-1 if tilt_normal[2] >= 0 else 1)
+
+    except:
+        theta = np.nan
+        gamma = np.nan
+
     S = pd.Series((theta, gamma))
     return S

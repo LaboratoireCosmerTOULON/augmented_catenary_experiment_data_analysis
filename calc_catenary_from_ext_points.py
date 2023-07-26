@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as opt
 
-
 def catenary(x, C):
     y = (1.0 / C) * (np.cosh(C * x) - 1.0)
     return (y)
@@ -16,9 +15,9 @@ def ma_fonction(xC, L, DH, dxAB):
     return (y)
 
 
-def func(xC, L, DH, dxAB):
+def func(a, L, DH, dxAB):
     return pow(L, 2) - pow(DH, 2) \
-        - pow(2 * sinh(dxAB / (2 / xC)) / xC, 2)
+        - pow(2 * a * sinh(dxAB / (2 * a)), 2)
 
 def ma_derivee(xC, L, DH, dxAB):
     y = 2.0 * xC * (L * L - DH * DH) - 2.0 * dxAB * np.sinh(xC * dxAB)
@@ -99,27 +98,28 @@ def get_catenary_param(DH, dxAB, L):
     # Eq. of catenary : 	y = (1/C)*(cosh(C*x) - 1) with origin at lowest point
     # Newton to get the initial guess
     val = 1 / dxAB * (L ** 2 - DH ** 2) / (dxAB ** 2)
-    # if val > 1:
-    #     x_init = 2.0 * np.arccosh(1 / dxAB * (L ** 2 - DH ** 2) / (dxAB ** 2))
-    # else:
-    x_init = 2.0
+    if val > 1:
+        x_init = 2.0 * np.arccosh(1 / dxAB * (L ** 2 - DH ** 2) / (dxAB ** 2))
+    else:
+        x_init = 2.0
 
     (x_deriv_zero, niter1) = NewtonsMethodForDeriv(x_init, L, DH, dxAB, eps)
     # print('x_deriv_zero = %f_gamma' % x_deriv_zero)
     x_init = 2.0 * x_deriv_zero
 
-    # xmax = 2.0 * x_init
-    # ymax = 1.5 * np.max([np.abs(ma_fonction(x_deriv_zero, L, DH, dxAB)), np.abs(ma_fonction(x_init, L, DH, dxAB))])
+    xmax = 2.0 * x_init
+    ymax = 1.5 * np.max([np.abs(ma_fonction(x_deriv_zero, L, DH, dxAB)), np.abs(ma_fonction(x_init, L, DH, dxAB))])
     # TraceFonction(xmax,ymax,L,DH,dxAB)
 
     # (C, niter2) = NewtonsMethod(x_init, L, DH, dxAB, eps)
-    niter2 = 0
-    C = opt.brentq(
-        ma_fonction,
-        -.1,
-        100.,
-        (L, DH, dxAB),
+    a = opt.brentq(
+        func,
+        -.01,
+        10.,
+        args=(L, DH, dxAB)
     )
+    C = 1/a
+    niter2 = 0
 
     # H is the positive solution of a 2nd degree equation A.H^2+B.H+C = 0 - see Juliette's doc
     interd = L ** 2 - DH ** 2
@@ -137,7 +137,7 @@ def get_catenary_param(DH, dxAB, L):
 # inputs : coord. of 1st extremety point A, coord. of 2nd extremity point B, length L of cable, distance d between markers along the cable
 # outputs : array of coord of marker points, and number of marker points, 1st and 2nd exty points included.
 # N.B.: assumption => the z coordinate is vertical, parallel to gravitation field.
-def  get_coor_marker_points_ideal_catenary(xA, yA, zA, xB, yB, zB, L, d, d0=0., nmax=None):
+def get_coor_marker_points_ideal_catenary(xA, yA, zA, xB, yB, zB, L, d, d0=0., nmax=None):
     dxAB = np.sqrt((xB - xA) ** 2 + (yB - yA) ** 2)
     DH = zB - zA
     # get parameter of catenary cable

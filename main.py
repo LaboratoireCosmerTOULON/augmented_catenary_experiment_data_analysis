@@ -10,7 +10,8 @@ from funcs import *
 warnings.simplefilter(action='ignore', category=Warning)
 
 folder = '/ICRA_EXPORT'
-w_path = '../../Users/FILLIUNG Martin/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
+# w_path = '../../Users/FILLIUNG Martin/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
+w_path = '../../Users/marti/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
 path = os.path.abspath(w_path)
 if 9 > int(sys.argv[1]) > 0:
     cable = f'dynamique{sys.argv[1]}'
@@ -169,54 +170,52 @@ for i, file in enumerate(directory):
 
         bar()
         # compute theta and gamma
-        dataframe[['Theta', 'Gamma']] = dataframe.apply(lambda row: df_compute_theta_gamma(
+        dataframe[['Theta', 'Gamma']] = \
+            dataframe.apply(lambda row: df_compute_theta_gamma(
             np.array([row[f'cable_cor_{i} X'] for i in range(n_points)]),
             np.array([row[f'cable_cor_{i} Y'] for i in range(n_points)]),
             np.array([row[f'cable_cor_{i} Z'] for i in range(n_points)]),
-            l, d, d0, is_float, n_points,
-            row[['exc1', 'exc2', 'exc3']],
-            row[['eyc1', 'eyc2', 'eyc3']],
-            row[['ezc1', 'ezc2', 'ezc3']]
+            l, d, d0, n_points
         ), axis=1)
 
         bar()
         # compute catenary
         dataframe = pd.merge(dataframe, dataframe.apply(lambda row: df_compute_catenary(
-            (-1 if is_float else 1) * row[[
-                f'cable_cor_{0 if not is_float else 15} X',
-                f'cable_cor_{0 if not is_float else 15} Y',
-                f'cable_cor_{0 if not is_float else 15} Z'
+            row[[
+                f'cable_cor_{0} X',
+                f'cable_cor_{0} Y',
+                f'cable_cor_{0} Z'
             ]].to_numpy(),
-                (-1 if is_float else 1) * row[[
-                    f'cable_cor_{n_points - 1 if not is_float else 0} X',
-                    f'cable_cor_{n_points - 1 if not is_float else 0} Y',
-                    f'cable_cor_{n_points - 1 if not is_float else 0} Z'
-                ]].to_numpy(),
+            row[[
+                f'cable_cor_{n_points - 1} X',
+                f'cable_cor_{n_points - 1} Y',
+                f'cable_cor_{n_points - 1} Z'
+            ]].to_numpy(),
             l, d, d0, 'vcat'
         ), axis=1), left_index=True, right_index=True)
 
         dataframe = pd.merge(dataframe, dataframe.apply(lambda row: df_compute_catenary(
-            (-1 if is_float else 1) * row[[
-                f'cable_cor_{0 if not is_float else 15} X',
-                f'cable_cor_{0 if not is_float else 15} Y',
-                f'cable_cor_{0 if not is_float else 15} Z'
+            row[[
+                f'cable_cor_{0} X',
+                f'cable_cor_{0} Y',
+                f'cable_cor_{0} Z'
             ]].to_numpy(),
             df_rotate_angle(
-                (-1 if is_float else 1) * row[[
-                    f'cable_cor_{n_points - 1 if not is_float else 0} X',
-                    f'cable_cor_{n_points - 1 if not is_float else 0} Y',
-                    f'cable_cor_{n_points - 1 if not is_float else 0} Z'
+                row[[
+                    f'cable_cor_{n_points - 1} X',
+                    f'cable_cor_{n_points - 1} Y',
+                    f'cable_cor_{n_points - 1} Z'
                 ]].to_numpy() - row[[
-                    f'cable_cor_{0 if not is_float else 15} X',
-                    f'cable_cor_{0 if not is_float else 15} Y',
-                    f'cable_cor_{0 if not is_float else 15} Z'
+                    f'cable_cor_{0} X',
+                    f'cable_cor_{0} Y',
+                    f'cable_cor_{0} Z'
                 ]].to_numpy(),
-                - row['Theta'],
+                row['Theta'],
                 1
             ) + row[[
-                f'cable_cor_{0 if not is_float else 15} X',
-                f'cable_cor_{0 if not is_float else 15} Y',
-                f'cable_cor_{0 if not is_float else 15} Z'
+                f'cable_cor_{0} X',
+                f'cable_cor_{0} Y',
+                f'cable_cor_{0} Z'
             ]].to_numpy(),
             l, d, d0, 'v_robot_cat'
         ), axis=1), left_index=True, right_index=True)
@@ -232,15 +231,15 @@ for i, file in enumerate(directory):
                                                       row[[f'v_robot_cat_{i} X', f'v_robot_cat_{i} Y',
                                                            f'v_robot_cat_{i} Z']].to_numpy() -
                                                       row[[
-                                                          f'cable_cor_{0 if not is_float else 15} X',
-                                                          f'cable_cor_{0 if not is_float else 15} Y',
-                                                          f'cable_cor_{0 if not is_float else 15} Z'
+                                                          f'cable_cor_{0} X',
+                                                          f'cable_cor_{0} Y',
+                                                          f'cable_cor_{0} Z'
                                                       ]].to_numpy(),
                                                       row[['exc1', 'exc2', 'exc3']],
                                                       row[['eyc1', 'eyc2', 'eyc3']],
                                                       row[['ezc1', 'ezc2', 'ezc3']]
                                                   ),
-                                                  row['Theta'],
+                                                  - row['Theta'],
                                                   1
                                               ),
                                               row['Gamma'],
@@ -251,19 +250,12 @@ for i, file in enumerate(directory):
                                           row[['exc3', 'eyc3', 'ezc3']]
                                       ).to_numpy() +
                                       row[[
-                                          f'cable_cor_{0 if not is_float else 15} X',
-                                          f'cable_cor_{0 if not is_float else 15} Y',
-                                          f'cable_cor_{0 if not is_float else 15} Z'
+                                          f'cable_cor_{0} X',
+                                          f'cable_cor_{0} Y',
+                                          f'cable_cor_{0} Z'
                                       ]].to_numpy()
                                       , index=[f'tcat_{i} X', f'tcat_{i} Y', f'tcat_{i} Z'])
                                   , axis=1)
-
-        if is_float:
-            for i in range(n_points):
-                dataframe[[f'vcat_{i} X', f'vcat_{i} Y', f'vcat_{i} Z']] = -1 * dataframe[
-                    [f'vcat_{i} X', f'vcat_{i} Y', f'vcat_{i} Z']]
-                dataframe[[f'tcat_{i} X', f'tcat_{i} Y', f'tcat_{i} Z']] = -1 * dataframe[
-                    [f'tcat_{i} X', f'tcat_{i} Y', f'tcat_{i} Z']]
 
         bar()
         # compute distance of measure to catenary
@@ -271,14 +263,11 @@ for i, file in enumerate(directory):
                              dataframe.apply(lambda row:
                                              df_compute_distance_to_catenary(
                                                  row[[f'cable_cor_{i} X' for i in range(n_points)]],
-                                                 row[[f'vcat_{i if not is_float else n_points - 1 - i} X' for i in
-                                                      range(n_points)]],
+                                                 row[[f'vcat_{i} X' for i in range(n_points)]],
                                                  row[[f'cable_cor_{i} Y' for i in range(n_points)]],
-                                                 row[[f'vcat_{i if not is_float else n_points - 1 - i} Y' for i in
-                                                      range(n_points)]],
+                                                 row[[f'vcat_{i} Y' for i in range(n_points)]],
                                                  row[[f'cable_cor_{i} Z' for i in range(n_points)]],
-                                                 row[[f'vcat_{i if not is_float else n_points - 1 - i} Z' for i in
-                                                      range(n_points)]],
+                                                 row[[f'vcat_{i} Z' for i in range(n_points)]],
                                                  'vcat'
                                              )
                                              , axis=1),
@@ -288,13 +277,13 @@ for i, file in enumerate(directory):
                              dataframe.apply(lambda row:
                                              df_compute_distance_to_catenary(
                                                  row[[f'cable_cor_{i} X' for i in range(n_points)]],
-                                                 row[[f'tcat_{i if not is_float else n_points - 1 - i} X' for i in
+                                                 row[[f'tcat_{i} X' for i in
                                                       range(n_points)]],
                                                  row[[f'cable_cor_{i} Y' for i in range(n_points)]],
-                                                 row[[f'tcat_{i if not is_float else n_points - 1 - i} Y' for i in
+                                                 row[[f'tcat_{i} Y' for i in
                                                       range(n_points)]],
                                                  row[[f'cable_cor_{i} Z' for i in range(n_points)]],
-                                                 row[[f'tcat_{i if not is_float else n_points - 1 - i} Z' for i in
+                                                 row[[f'tcat_{i} Z' for i in
                                                       range(n_points)]],
                                                  'tcat'
                                              )

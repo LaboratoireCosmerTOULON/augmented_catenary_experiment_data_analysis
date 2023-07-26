@@ -7,7 +7,8 @@ from matplotlib.widgets import Slider, Button
 from funcs import *
 
 folder = '/ICRA_EXPORT'
-w_path = '../../Users/FILLIUNG Martin/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
+# w_path = '../../Users/FILLIUNG Martin/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
+w_path = '../../Users/marti/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
 path = os.path.abspath(w_path)
 directory = sorted(os.listdir(path))
 directory = [file for file in directory if '.csv' in file]
@@ -19,6 +20,7 @@ questions = [
                 choices=directory,
             ),
 ]
+file = directory[0]
 answers = inquirer.prompt(questions)
 file = answers['file']
 full_path = path + "/" + file
@@ -63,12 +65,12 @@ def update(i):
     b.bar([i - .25 for i in range(len(Dxvc))], Dxvc, width=.5, color='b')
     c.bar([i - .25 for i in range(len(Dyvc))], Dyvc, width=.5, color='b')
     d.bar([i - .25 for i in range(len(Dzvc))], Dzvc, width=.5, color='b')
-    e.bar([i - .25 for i in range(len(Dvc))], Dzvc, width=.5, color='b')
+    e.bar([i - .25 for i in range(len(Dvc))], Dvc, width=.5, color='b')
     b.bar([i + .25 for i in range(len(Dxtc))], Dxtc, width=.5, color='r')
     c.bar([i + .25 for i in range(len(Dytc))], Dytc, width=.5, color='r')
     d.bar([i + .25 for i in range(len(Dztc))], Dztc, width=.5, color='r')
-    e.bar([i + .25 for i in range(len(Dtc))], Dztc, width=.5, color='r')
-    a.set_title(f'{file}\nTheta = {data["Theta"][i]:.2f}; Gamma= {data["Gamma"][i]:.2f}')
+    e.bar([i + .25 for i in range(len(Dtc))], Dtc, width=.5, color='r')
+    a.set_title(f'{file} (vcat: {data["vcat_0 X"].count() / data.shape[0]:.2f}; tcat: {data["tcat_0 X"].count() / data.shape[0]:.2f})\nTheta = {data["Theta"][i]:.2f}; Gamma= {data["Gamma"][i]:.2f}')
     a.legend(('marqueurs', 'chainette verticale', 'chainette inclinée'))
     a.set_xlabel("x (mm)")
     a.set_ylabel("y (mm)")
