@@ -1,10 +1,9 @@
-from math import sin, cos, pi, sqrt, acos
+from math import sin, cos, sqrt, acos
 
 import pandas as pd
 from numpy import nan
 from numpy.linalg import norm
 from pandas import DataFrame
-import scipy.optimize as opt
 
 from calc_catenary_from_ext_points import *
 
@@ -28,55 +27,24 @@ def get_cable_points_at_index(df: DataFrame, index: int):
     return X, Y, Z
 
 
-def get_vcable_points_at_index(df: DataFrame, index: int, n_points):
+def get_named_points_at_index(key: str, df: DataFrame, index: int, n_points: int):
     X, Y, Z = [], [], []
 
     for i in range(n_points):
-        X.append(df[f'cable_cor_{i} X'][index])
-        Y.append(df[f'cable_cor_{i} Y'][index])
-        Z.append(df[f'cable_cor_{i} Z'][index])
+        X.append(df[f'{key}_{i} X'][index])
+        Y.append(df[f'{key}_{i} Y'][index])
+        Z.append(df[f'{key}_{i} Z'][index])
 
     return X, Y, Z
 
 
-def get_vcat_points_at_index(df: DataFrame, index: int, n_points):
-    X, Y, Z = [], [], []
-    for i in range(n_points):
-        X.append(df[f'vcat_{i} X'][index])
-        Y.append(df[f'vcat_{i} Y'][index])
-        Z.append(df[f'vcat_{i} Z'][index])
-
-    return X, Y, Z
-
-
-def get_tcat_points_at_index(df: DataFrame, index: int, n_points):
-    X, Y, Z = [], [], []
-    for i in range(n_points):
-        X.append(df[f'tcat_{i} X'][index])
-        Y.append(df[f'tcat_{i} Y'][index])
-        Z.append(df[f'tcat_{i} Z'][index])
-
-    return X, Y, Z
-
-
-def get_dist_to_vcat_at_index(df: DataFrame, index: int, n_points):
+def get_named_dists_at_index(key: str, df: DataFrame, index: int, n_points: int):
     X, Y, Z, D = [], [], [], []
     for i in range(n_points):
-        X.append(df[f'vcat_{i} dX'][index])
-        Y.append(df[f'vcat_{i} dY'][index])
-        Z.append(df[f'vcat_{i} dZ'][index])
-        D.append(df[f'vcat_{i} D'][index])
-
-    return X, Y, Z, D
-
-
-def get_dist_to_tcat_at_index(df: DataFrame, index: int, n_points):
-    X, Y, Z, D = [], [], [], []
-    for i in range(n_points):
-        X.append(df[f'tcat_{i} dX'][index])
-        Y.append(df[f'tcat_{i} dY'][index])
-        Z.append(df[f'tcat_{i} dZ'][index])
-        D.append(df[f'tcat_{i} D'][index])
+        X.append(df[f'{key}_{i} dX'][index])
+        Y.append(df[f'{key}_{i} dY'][index])
+        Z.append(df[f'{key}_{i} dZ'][index])
+        D.append(df[f'{key}_{i} D'][index])
 
     return X, Y, Z, D
 
@@ -256,6 +224,7 @@ def angles_cost_function(angles, X, Y, Z, L, dL, d0, n_points, exc, eyc, ezc):
 
     return mean / n_not_nan
 
+
 def theta_cost_function(theta, X, Y, Z, L, dL, d0, n_points):
     R = np.array([
         [cos(theta), 0, sin(theta)],
@@ -295,6 +264,7 @@ def theta_cost_function(theta, X, Y, Z, L, dL, d0, n_points):
 
     return dist / n
 
+
 def tilt_plane_cost_function(abcd, X, Y, Z):
     a, b, c, d = abcd[0], abcd[1], abcd[2], abcd[3]
     dist = 0.
@@ -302,6 +272,7 @@ def tilt_plane_cost_function(abcd, X, Y, Z):
         if not pd.isna(x):
             dist += pow((x * a + y * b + z * c) / 1000. + d, 2)
     return dist / len(X)
+
 
 def df_compute_theta_gamma(X, Y, Z, L, dL, d0, n_points):
     try:
