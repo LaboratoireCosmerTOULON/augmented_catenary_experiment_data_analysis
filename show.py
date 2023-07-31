@@ -7,8 +7,8 @@ from matplotlib.widgets import Slider, Button
 from funcs import *
 
 folder = '/ICRA_EXPORT'
-w_path = '../../Users/FILLIUNG Martin/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
-# w_path = '../../Users/marti/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
+# w_path = '../../Users/FILLIUNG Martin/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
+w_path = '../../Users/marti/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
 path = os.path.abspath(w_path)
 directory = sorted(os.listdir(path))
 directory = [file for file in directory if '.csv' in file]
@@ -57,10 +57,10 @@ def update(i):
     Xm, Ym, Zm = get_named_points_at_index('cable_cor', data, i, n_points)
     Xvc, Yvc, Zvc = get_named_points_at_index('vcat', data, i, n_points)
     Xtc, Ytc, Ztc = get_named_points_at_index('tcat', data, i, n_points)
-    Xmi, Ymi, Zmi = get_named_points_at_index('cable_cor_inv', data, i, n_points)
-    Xvci, Yvci, Zvci = get_named_points_at_index('vcat_inv', data, i, n_points)
-    Xtci, Ytci, Ztci = get_named_points_at_index('tcat_inv', data, i, n_points)
-    Xv, Yv, Zv = get_named_points_at_index('v_robot_cat', data, i, n_points)
+    # Xmi, Ymi, Zmi = get_named_points_at_index('cable_cor_inv', data, i, n_points)
+    # Xvci, Yvci, Zvci = get_named_points_at_index('vcat_inv', data, i, n_points)
+    # Xtci, Ytci, Ztci = get_named_points_at_index('tcat_inv', data, i, n_points)
+    # Xv, Yv, Zv = get_named_points_at_index('v_robot_cat', data, i, n_points)
     Dxvc, Dyvc, Dzvc, Dvc = get_named_dists_at_index('vcat', data, i, n_points)
     Dxtc, Dytc, Dztc, Dtc = get_named_dists_at_index('tcat', data, i, n_points)
     a.scatter(Xm, Ym, Zm, c='k', marker='d')

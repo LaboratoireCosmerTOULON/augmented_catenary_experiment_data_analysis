@@ -9,12 +9,12 @@ from alive_progress import alive_bar
 warnings.simplefilter(action='ignore', category=Warning)
 
 folder = '/ICRA_EXPORT'
-w_path = '../../Users/FILLIUNG Martin/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
-# w_path = '../../Users/marti/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
+# w_path = '../../Users/FILLIUNG Martin/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
+w_path = '../../Users/marti/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
 path = os.path.abspath(w_path)
 
 directory = sorted(os.listdir(path))
-directory = [file for file in directory if '.csv' in file]
+directory = [file for file in directory if '.csv' in file and 'side_only' in file]
 print(f'Found {len(directory)} files:')
 for i, f in enumerate(directory):
     print(f'\t{i}\t{f}')

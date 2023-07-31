@@ -10,8 +10,8 @@ from funcs import *
 warnings.simplefilter(action='ignore', category=Warning)
 
 folder = '/ICRA_EXPORT'
-w_path = '../../Users/FILLIUNG Martin/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
-# w_path = '../../Users/marti/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
+# w_path = '../../Users/FILLIUNG Martin/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
+w_path = '../../Users/marti/OneDrive - Université de Toulon/Thèse/CEPHISMER-11-2022_POST_TRAITEMENT' + folder
 path = os.path.abspath(w_path)
 if 9 > int(sys.argv[1]) > 0:
     cable = f'dynamique{sys.argv[1]}'
@@ -34,7 +34,7 @@ v24 = np.load('v24.npy')
 
 for i, file in enumerate(directory):
 
-    if f'{file[:-4]}.csv' in os.listdir(path):
+    if f'{file[:-4]}_side_only.csv' in os.listdir(path):
         print(f'{file} already processed')
         continue
 
@@ -173,9 +173,6 @@ for i, file in enumerate(directory):
             # compute theta and gamma
             for i in range(n_points):
                 dataframe[f"cable_cor_inv_{i} X"] = dataframe[f"cable_cor_{i} X"]
-                # dataframe[f"cable_cor_inv_{i} X"] = - (
-                #         dataframe[f"cable_cor_{i} X"] - dataframe[f"cable_cor_{n_points - 1} X"]
-                # )
                 dataframe[f"cable_cor_inv_{i} Y"] = - dataframe[f"cable_cor_{i} Y"]
                 dataframe[f"cable_cor_inv_{i} Z"] = - dataframe[f"cable_cor_{i} Z"]
 
@@ -187,6 +184,9 @@ for i, file in enumerate(directory):
                     np.array([row[f'cable_cor_inv_{i} Z'] for i in range(n_points)]),
                     l, d, d0, n_points
                 ), axis=1)
+
+            # for side tilt only
+            dataframe['Theta'] = 0.
 
             bar()
             # compute catenary
@@ -272,11 +272,9 @@ for i, file in enumerate(directory):
 
             for i in range(n_points):
                 dataframe[f"vcat_{i} X"] = dataframe[f"vcat_inv_{i} X"]
-                # dataframe[f"vcat_{i} X"] = - dataframe[f"vcat_inv_{i} X"] + dataframe[f"cable_cor_{n_points - 1} X"]
                 dataframe[f"vcat_{i} Y"] = - dataframe[f"vcat_inv_{i} Y"]
                 dataframe[f"vcat_{i} Z"] = - dataframe[f"vcat_inv_{i} Z"]
                 dataframe[f"tcat_{i} X"] = dataframe[f"tcat_inv_{i} X"]
-                # dataframe[f"tcat_{i} X"] = - dataframe[f"tcat_inv_{i} X"] + dataframe[f"cable_cor_{n_points - 1} X"]
                 dataframe[f"tcat_{i} Y"] = - dataframe[f"tcat_inv_{i} Y"]
                 dataframe[f"tcat_{i} Z"] = - dataframe[f"tcat_inv_{i} Z"]
 
@@ -290,6 +288,9 @@ for i, file in enumerate(directory):
                 np.array([row[f'cable_cor_{i} Z'] for i in range(n_points)]),
                 l, d, d0, n_points
             ), axis=1)
+
+            # # for side tilt only
+            dataframe['Theta'] = 0.
 
             bar()
             # compute catenary
@@ -403,4 +404,4 @@ for i, file in enumerate(directory):
                                              , axis=1),
                              left_index=True, right_index=True)
 
-        dataframe.to_csv(f'{path}/{file[:-4]}.csv')
+        dataframe.to_csv(f'{path}/{file[:-4]}_side_only.csv')
