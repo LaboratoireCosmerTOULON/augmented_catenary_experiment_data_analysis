@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 from alive_progress import alive_bar
 
+import matplotlib.pyplot as plt
+
 warnings.simplefilter(action='ignore', category=Warning)
 
 folder = '/ICRA_EXPORT'
@@ -14,7 +16,7 @@ w_path = '../../Users/marti/OneDrive - Université de Toulon/Thèse/CEPHISMER-11
 path = os.path.abspath(w_path)
 
 directory = sorted(os.listdir(path))
-directory = [file for file in directory if '.csv' in file and 'side_only' in file]
+directory = [file for file in directory if '.csv' in file and not 'side_only' in file]
 print(f'Found {len(directory)} files:')
 for i, f in enumerate(directory):
     print(f'\t{i}\t{f}')
@@ -37,6 +39,9 @@ for cable in range(1, 9):
                         'nframes': np.nan,
                     }
 
+Yv = []
+Yt = []
+
 with alive_bar(len(directory), theme='musical') as bar:
     for file in directory:
         cable = file[11]
@@ -50,6 +55,9 @@ with alive_bar(len(directory), theme='musical') as bar:
 
         vertical['mean'] = vertical.apply(lambda row: pd.Series((row.mean())), axis=1)
         inclined['mean'] = inclined.apply(lambda row: pd.Series((row.mean())), axis=1)
+
+        Yv += vertical['mean'].tolist()
+        Yt += inclined['mean'].tolist()
 
         file_v_mean = vertical['mean'].mean()
         file_v_stddev = vertical['mean'].std()
@@ -131,3 +139,7 @@ for cable, cable_data in stats.items():
                 print(f'\t\t\t{distance}')
                 print('\t\t\t\tvertical', distance_data['vertical'])
                 print('\t\t\t\tinclined', distance_data['inclined'])
+
+plt.plot(Yv)
+plt.plot(Yt)
+plt.show()
