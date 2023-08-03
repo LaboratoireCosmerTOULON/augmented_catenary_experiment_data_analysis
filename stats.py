@@ -6,8 +6,6 @@ import numpy as np
 import pandas as pd
 from alive_progress import alive_bar
 
-import matplotlib.pyplot as plt
-
 warnings.simplefilter(action='ignore', category=Warning)
 
 folder = '/ICRA_EXPORT'
@@ -39,9 +37,6 @@ for cable in range(1, 9):
                         'nframes': np.nan,
                     }
 
-Yv = []
-Yt = []
-
 with alive_bar(len(directory), theme='musical') as bar:
     for file in directory:
         cable = file[11]
@@ -55,9 +50,6 @@ with alive_bar(len(directory), theme='musical') as bar:
 
         vertical['mean'] = vertical.apply(lambda row: pd.Series((row.mean())), axis=1)
         inclined['mean'] = inclined.apply(lambda row: pd.Series((row.mean())), axis=1)
-
-        Yv += vertical['mean'].tolist()
-        Yt += inclined['mean'].tolist()
 
         file_v_mean = vertical['mean'].mean()
         file_v_stddev = vertical['mean'].std()
@@ -119,14 +111,14 @@ for cable, cable_data in stats.items():
                         v_stddev = distance_data['vertical']['stddev']
                     else:
                         v_mean = (v_mean + distance_data['vertical']['mean']) / 2
-                        v_stddev = sqrt(pow(v_mean, 2) + pow(distance_data['vertical']['mean'], 2))
+                        v_stddev = sqrt(pow(v_stddev, 2) + pow(distance_data['vertical']['stddev'], 2))
                 if not np.isnan(distance_data['inclined']['mean']):
                     if np.isnan(t_mean):
                         t_mean = distance_data['inclined']['mean']
                         t_stddev = distance_data['inclined']['stddev']
                     else:
                         t_mean = (t_mean + distance_data['inclined']['mean']) / 2
-                        t_stddev = sqrt(pow(t_mean, 2) + pow(distance_data['inclined']['mean'], 2))
+                        t_stddev = sqrt(pow(t_stddev, 2) + pow(distance_data['inclined']['stddev'], 2))
 
     print(f'{cable}')
     print(f'\tvertical: {v_mean}; {v_stddev}')
@@ -139,7 +131,3 @@ for cable, cable_data in stats.items():
                 print(f'\t\t\t{distance}')
                 print('\t\t\t\tvertical', distance_data['vertical'])
                 print('\t\t\t\tinclined', distance_data['inclined'])
-
-plt.plot(Yv)
-plt.plot(Yt)
-plt.show()
