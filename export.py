@@ -29,21 +29,36 @@ for file in directory:
     data = pd.read_csv(f'{path}/{file}')
 
     vertical = data.loc[:, [f'vcat_{i} D' for i in range(16)]]
-    inclined = data.loc[:, [f'tcat_{i} D' for i in range(16)]]
+    theta = data.loc[:, [f't_acat_{i} D' for i in range(16)]]
+    gamma = data.loc[:, [f'g_acat_{i} D' for i in range(16)]]
+    theta_gamma = data.loc[:, [f'tg_acat_{i} D' for i in range(16)]]
+
     speed = data.loc[:, ['rob_speed X', 'rob_speed Y', 'rob_speed Z']]
 
     vertical['mean'] = vertical.apply(lambda row: pd.Series((row.mean())), axis=1)
-    inclined['mean'] = inclined.apply(lambda row: pd.Series((row.mean())), axis=1)
+    theta['mean'] = theta.apply(lambda row: pd.Series((row.mean())), axis=1)
+    gamma['mean'] = gamma.apply(lambda row: pd.Series((row.mean())), axis=1)
+    theta_gamma['mean'] = theta_gamma.apply(lambda row: pd.Series((row.mean())), axis=1)
     speed['norm'] = speed.apply(lambda row: pd.Series((norm(row) / 1000.)), axis=1)
 
-    with open(f'vertical_{file[:-4]}.txt', 'w') as write_file:
+    with open(f'e_vertical_{file[:-4]}.txt', 'w') as write_file:
         write_file.write('%x y\n')
         for t, v in zip(data['Time'], vertical['mean']):
             write_file.write(f'{t} {v}\n')
 
-    with open(f'inclined_{file[:-4]}.txt', 'w') as write_file:
+    with open(f'e_theta_{file[:-4]}.txt', 'w') as write_file:
         write_file.write('%x y\n')
-        for t, v in zip(data['Time'], inclined['mean']):
+        for t, v in zip(data['Time'], theta['mean']):
+            write_file.write(f'{t} {v}\n')
+
+    with open(f'e_gamma_{file[:-4]}.txt', 'w') as write_file:
+        write_file.write('%x y\n')
+        for t, v in zip(data['Time'], gamma['mean']):
+            write_file.write(f'{t} {v}\n')
+
+    with open(f'e_theta_gamma_{file[:-4]}.txt', 'w') as write_file:
+        write_file.write('%x y\n')
+        for t, v in zip(data['Time'], theta_gamma['mean']):
             write_file.write(f'{t} {v}\n')
 
     with open(f'speed_{file[:-4]}.txt', 'w') as write_file:
