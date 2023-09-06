@@ -12,13 +12,8 @@ w_path = '../../Users/marti/OneDrive - Université de Toulon/Thèse/CEPHISMER-11
 path = os.path.abspath(w_path)
 
 directory = sorted(os.listdir(path))
-directory = [
-    file for file in directory
-    if ('dynamique3' in file or 'dynamique6' in file)
-    and '200' in file
-    and 'dis2' in file
-    and '.csv' in file
-]
+directory = [file for file in directory if
+             ('dynamique3' in file or 'dynamique6' in file) and '200' in file and 'dis2' in file and '.csv' in file]
 
 print(f'Found {len(directory)} files:')
 for i, f in enumerate(directory):

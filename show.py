@@ -86,8 +86,8 @@ def update(i):
     a.set_title(
         f'{file} '
         f'(vcat: {data["vcat_0 X"].count() / data.shape[0]:.2f}; '
-        f't_acat: {data["t_acat_0 X"].count() / data.shape[0]:.2f})'
-        f'g_acat: {data["g_acat_0 X"].count() / data.shape[0]:.2f})'
+        f't_acat: {data["t_acat_0 X"].count() / data.shape[0]:.2f}; '
+        f'g_acat: {data["g_acat_0 X"].count() / data.shape[0]:.2f}; '
         f'tg_acat: {data["tg_acat_0 X"].count() / data.shape[0]:.2f})\n'
         f'Theta = {data["Theta"][i]:.2f}; '
         f'Gamma= {data["Gamma"][i]:.2f}'

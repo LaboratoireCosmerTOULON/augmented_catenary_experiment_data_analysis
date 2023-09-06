@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as opt
 
+
 def catenary(x, C):
     y = (1.0 / C) * (np.cosh(C * x) - 1.0)
     return (y)
@@ -16,8 +17,8 @@ def ma_fonction(xC, L, DH, dxAB):
 
 
 def func(a, L, DH, dxAB):
-    return pow(L, 2) - pow(DH, 2) \
-        - pow(2 * a * sinh(dxAB / (2 * a)), 2)
+    return pow(L, 2) - pow(DH, 2) - pow(2 * a * sinh(dxAB / (2 * a)), 2)
+
 
 def ma_derivee(xC, L, DH, dxAB):
     y = 2.0 * xC * (L * L - DH * DH) - 2.0 * dxAB * np.sinh(xC * dxAB)
@@ -113,12 +114,9 @@ def get_catenary_param(DH, dxAB, L):
 
     # (C, niter2) = NewtonsMethod(x_init, L, DH, dxAB, eps)
     a = opt.brentq(
-        func,
-        -.01,
-        10.,
-        args=(L, DH, dxAB)
+        func, -.01, 10., args=(L, DH, dxAB)
     )
-    C = 1/a
+    C = 1 / a
     niter2 = 0
 
     # H is the positive solution of a 2nd degree equation A.H^2+B.H+C = 0 - see Juliette's doc

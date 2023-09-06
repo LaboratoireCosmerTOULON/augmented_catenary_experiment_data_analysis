@@ -62,13 +62,20 @@ for cable in range(1, 9):
                     }
 
 for file in directory:
-    print(f'loading {file}')
+    print(f'loading {file}; ', end='')
     cable = file[11]
     axis = file[12]
     speed = file[13:16]
     distance = file[16:20]
     n_points = 16 if not cable == '7' else 13
     data = pd.read_csv(f'{path}/{file}')
+
+    print(
+        f'fill rates: vertical={100 * data["vcat_0 D"].count() / data.shape[0]:.2f}%; '
+        f'theta={100 * data["t_acat_0 D"].count() / data.shape[0]:.2f}%; '
+        f'gamma={100 * data["g_acat_0 D"].count() / data.shape[0]:.2f}%; '
+        f'theta_gamma={100 * data["tg_acat_0 D"].count() / data.shape[0]:.2f}%;'
+        )
 
     vertical = data.loc[:, [f'vcat_{i} D' for i in range(n_points)]]
     theta = data.loc[:, [f't_acat_{i} D' for i in range(n_points)]]
@@ -95,19 +102,19 @@ for file in directory:
 
     datas[cable][axis][speed][distance]['vertical'] = vertical['mean'] if type(
         datas[cable][axis][speed][distance]['vertical']
-        ) == float else pd.concat((datas[cable][axis][speed][distance]['vertical'], vertical['mean']))
+    ) == float else pd.concat((datas[cable][axis][speed][distance]['vertical'], vertical['mean']))
 
     datas[cable][axis][speed][distance]['theta'] = theta['mean'] if type(
         datas[cable][axis][speed][distance]['theta']
-        ) == float else pd.concat((datas[cable][axis][speed][distance]['theta'], theta['mean']))
+    ) == float else pd.concat((datas[cable][axis][speed][distance]['theta'], theta['mean']))
 
     datas[cable][axis][speed][distance]['gamma'] = gamma['mean'] if type(
         datas[cable][axis][speed][distance]['gamma']
-        ) == float else pd.concat((datas[cable][axis][speed][distance]['gamma'], gamma['mean']))
+    ) == float else pd.concat((datas[cable][axis][speed][distance]['gamma'], gamma['mean']))
 
     datas[cable][axis][speed][distance]['theta_gamma'] = theta_gamma['mean'] if type(
         datas[cable][axis][speed][distance]['theta_gamma']
-        ) == float else pd.concat((datas[cable][axis][speed][distance]['theta_gamma'], theta_gamma['mean']))
+    ) == float else pd.concat((datas[cable][axis][speed][distance]['theta_gamma'], theta_gamma['mean']))
 
     stats[cable]['vertical']['fill'] += data["vcat_0 D"].count()
     stats[cable]['theta']['fill'] += data["t_acat_0 D"].count()
@@ -170,7 +177,7 @@ for cable, cable_data in datas.items():
                     stats[cable][axis][speed][distance]['vertical']['Q75'] = distance_data['vertical'].quantile(3 / 4)
                     stats[cable][axis][speed][distance]['vertical']['Q99'] = distance_data['vertical'].quantile(
                         99 / 100
-                        )
+                    )
                     stats[cable][axis][speed][distance]['vertical']['IQR'] = \
                         stats[cable][axis][speed][distance]['vertical']['Q75'] - \
                         stats[cable][axis][speed][distance]['vertical']['Q25']
@@ -200,19 +207,19 @@ for cable, cable_data in datas.items():
                 if type(distance_data['theta_gamma']) != float:
                     stats[cable][axis][speed][distance]['theta_gamma']['Q1'] = distance_data['theta_gamma'].quantile(
                         1 / 100
-                        )
+                    )
                     stats[cable][axis][speed][distance]['theta_gamma']['Q25'] = distance_data['theta_gamma'].quantile(
                         1 / 4
-                        )
+                    )
                     stats[cable][axis][speed][distance]['theta_gamma']['Q50'] = distance_data['theta_gamma'].quantile(
                         2 / 4
-                        )
+                    )
                     stats[cable][axis][speed][distance]['theta_gamma']['Q75'] = distance_data['theta_gamma'].quantile(
                         3 / 4
-                        )
+                    )
                     stats[cable][axis][speed][distance]['theta_gamma']['Q99'] = distance_data['theta_gamma'].quantile(
                         99 / 100
-                        )
+                    )
                     stats[cable][axis][speed][distance]['theta_gamma']['IQR'] = \
                         stats[cable][axis][speed][distance]['theta_gamma']['Q75'] - \
                         stats[cable][axis][speed][distance]['theta_gamma']['Q25']
@@ -220,7 +227,7 @@ for cable, cable_data in datas.items():
 for cable, cable_data in stats.items():
     print(f'cable {cable}')
     print(
-        f'vertical: '
+        f'vertical: {cable_data["vertical"]["fill"]}/{cable_data["vertical"]["nframes"]}; '
         f'Q1={cable_data["vertical"]["Q1"]}; '
         f'Q25={cable_data["vertical"]["Q25"]}; '
         f'Q50={cable_data["vertical"]["Q50"]}; '
@@ -228,7 +235,7 @@ for cable, cable_data in stats.items():
         f'Q99={cable_data["vertical"]["Q99"]}'
     )
     print(
-        f'theta: '
+        f'theta: {cable_data["theta"]["fill"]}/{cable_data["theta"]["nframes"]}; '
         f'Q1={cable_data["theta"]["Q1"]}; '
         f'Q25={cable_data["theta"]["Q25"]}; '
         f'Q50={cable_data["theta"]["Q50"]}; '
@@ -236,7 +243,7 @@ for cable, cable_data in stats.items():
         f'Q99={cable_data["theta"]["Q99"]}'
     )
     print(
-        f'gamma: '
+        f'gamma: {cable_data["gamma"]["fill"]}/{cable_data["gamma"]["nframes"]}; '
         f'Q1={cable_data["gamma"]["Q1"]}; '
         f'Q25={cable_data["gamma"]["Q25"]}; '
         f'Q50={cable_data["gamma"]["Q50"]}; '
@@ -244,7 +251,7 @@ for cable, cable_data in stats.items():
         f'Q99={cable_data["gamma"]["Q99"]}'
     )
     print(
-        f'theta_gamma: '
+        f'theta_gamma: {cable_data["theta_gamma"]["fill"]}/{cable_data["theta_gamma"]["nframes"]}; '
         f'Q1={cable_data["theta_gamma"]["Q1"]}; '
         f'Q25={cable_data["theta_gamma"]["Q25"]}; '
         f'Q50={cable_data["theta_gamma"]["Q50"]}; '
@@ -259,7 +266,7 @@ for cable, cable_data in stats.items():
             for distance, distance_data in speed_data.items():
                 print(f'\t\t\tdistance {distance}')
                 print(
-                    f'\t\t\t\tvertical: '
+                    f'\t\t\t\tvertical: {distance_data["vertical"]["fill"]}/{distance_data["vertical"]["nframes"]}; '
                     f'Q1={distance_data["vertical"]["Q1"]}; '
                     f'Q25={distance_data["vertical"]["Q25"]}; '
                     f'Q50={distance_data["vertical"]["Q50"]}; '
@@ -267,7 +274,7 @@ for cable, cable_data in stats.items():
                     f'Q99={distance_data["vertical"]["Q99"]}'
                 )
                 print(
-                    f'\t\t\t\ttheta: '
+                    f'\t\t\t\ttheta: {distance_data["theta"]["fill"]}/{distance_data["theta"]["nframes"]}; '
                     f'Q1={distance_data["theta"]["Q1"]}; '
                     f'Q25={distance_data["theta"]["Q25"]}; '
                     f'Q50={distance_data["theta"]["Q50"]}; '
@@ -275,7 +282,7 @@ for cable, cable_data in stats.items():
                     f'Q99={distance_data["theta"]["Q99"]}'
                 )
                 print(
-                    f'\t\t\t\tgamma: '
+                    f'\t\t\t\tgamma: {distance_data["gamma"]["fill"]}/{distance_data["gamma"]["nframes"]}; '
                     f'Q1={distance_data["gamma"]["Q1"]}; '
                     f'Q25={distance_data["gamma"]["Q25"]}; '
                     f'Q50={distance_data["gamma"]["Q50"]}; '
@@ -283,7 +290,7 @@ for cable, cable_data in stats.items():
                     f'Q99={distance_data["gamma"]["Q99"]}'
                 )
                 print(
-                    f'\t\t\t\ttheta_gamma: '
+                    f'\t\t\t\ttheta_gamma: {distance_data["theta_gamma"]["fill"]}/{distance_data["theta_gamma"]["nframes"]}; '
                     f'Q1={distance_data["theta_gamma"]["Q1"]}; '
                     f'Q25={distance_data["theta_gamma"]["Q25"]}; '
                     f'Q50={distance_data["theta_gamma"]["Q50"]}; '
